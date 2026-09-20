@@ -5,9 +5,15 @@ info:
   description: |
     HTTP API for the Bucket List application.
 
-    This specification documents the currently implemented Place and Experience
-    endpoints. It is derived from the Next.js route handlers, validation layer,
-    repository, and API tests. Do not assume undocumented endpoints or fields exist.
+    This specification documents the currently implemented Place, Experience,
+    and Submission endpoints. It is derived from the Next.js route handlers,
+    validation layer, repository, and API tests. Do not assume undocumented
+    endpoints or fields exist.
+
+    Authentication is not implemented yet. Creating a submission requires an
+    authenticated user identity supplied by a future auth layer; until then
+    `POST /api/submissions` returns `401 unauthorized`. Do not send `userId`
+    in request bodies as a trusted identity.
 servers:
   - url: http://localhost:3000
     description: Local development server
@@ -17,6 +23,10 @@ tags:
     description: Manage geographic places where experiences are scoped.
   - name: Experiences
     description: Manage curated experiences and their tag assignments.
+  - name: Submissions
+    description: |
+      Contributor submissions awaiting curator review, including approve,
+      reject, and merge workflows.
 paths:
   /api/places:
     get:
@@ -964,6 +974,460 @@ paths:
                   code: database_error
                   message: Unable to remove tag
 
+  /api/submissions:
+    get:
+      tags: [Submissions]
+      summary: List submissions
+      description: |
+        Returns submissions ordered by `createdAt` ascending.
+
+        Optional filters: `status`, `placeId`, `experienceId`.
+      operationId: listSubmissions
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter by submission status.
+          schema:
+            $ref: "#/components/schemas/SubmissionStatus"
+        - name: placeId
+          in: query
+          required: false
+          description: Filter by place UUID.
+          schema:
+            type: string
+            format: uuid
+        - name: experienceId
+          in: query
+          required: false
+          description: Filter by associated experience UUID.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Submissions retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionListResponse"
+              example:
+                submissions:
+                  - id: 22222222-2222-4222-8222-222222222222
+                    userId: 33333333-3333-4333-8333-333333333333
+                    placeId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                    experienceId: null
+                    content: Hike the ridge trail at sunrise
+                    goodToKnow: Arrive early for parking
+                    status: pending
+                    createdAt: "2026-09-20T12:00:00.000Z"
+                    updatedAt: "2026-09-20T12:00:00.000Z"
+        "400":
+          description: Invalid query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: invalid_input
+                  message: Invalid list submissions query
+                  details:
+                    status: status must be one of pending, approved, rejected
+        "500":
+          description: Database error while retrieving submissions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to retrieve submissions
+    post:
+      tags: [Submissions]
+      summary: Create a submission
+      description: |
+        Creates a pending submission for the authenticated user.
+
+        Authentication is not implemented yet. The route requires an authenticated
+        user identity from the auth layer and does not accept `userId` from the
+        request body. Until auth is wired up, this endpoint returns `401`.
+
+        `placeId` must reference an existing place. `content` is required
+        (1–10000 characters after trim). `goodToKnow` is optional (at most
+        10000 characters after trim). Empty optional strings are stored as null.
+      operationId: createSubmission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubmissionRequest"
+            example:
+              placeId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              content: Hike the ridge trail at sunrise
+              goodToKnow: Arrive early for parking
+      responses:
+        "201":
+          description: Submission created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          description: |
+            Invalid request body or invalid submission input.
+
+            - `invalid_request` when the body is not valid JSON.
+            - `invalid_input` when required fields are missing, types are wrong,
+              UUIDs are invalid, unsupported fields (including `userId`) are
+              present, or string length limits are exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidJson:
+                  summary: Body is not valid JSON
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request body must be valid JSON
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Invalid submission input
+                      details:
+                        placeId: placeId is required
+                        content: content is required
+        "401":
+          description: Authentication required. No authenticated user is available.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: unauthorized
+                  message: Authentication required to create a submission
+        "404":
+          description: Referenced place (or authenticated user) does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Place not found
+        "500":
+          description: Database error while creating the submission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to create submission
+
+  /api/submissions/{id}:
+    parameters:
+      - $ref: "#/components/parameters/SubmissionId"
+    get:
+      tags: [Submissions]
+      summary: Get a submission by id
+      operationId: getSubmissionById
+      responses:
+        "200":
+          description: Submission retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          description: Invalid submission id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: invalid_input
+                  message: Invalid submission id
+                  details:
+                    id: id must be a valid UUID
+        "404":
+          description: Submission not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Submission not found
+        "500":
+          description: Database error while retrieving the submission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to retrieve submission
+    patch:
+      tags: [Submissions]
+      summary: Update a submission
+      description: |
+        Partial update of `placeId`, `content`, and/or `goodToKnow`.
+
+        Status cannot be changed through this endpoint. Use the approve, reject,
+        or merge endpoints for status transitions. Unknown fields (including
+        `status`) cause `invalid_input`.
+      operationId: updateSubmission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSubmissionRequest"
+            example:
+              content: Updated ridge trail tip
+              goodToKnow: null
+      responses:
+        "200":
+          description: Submission updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          description: Invalid request body or invalid submission input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Submission or referenced place not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                submissionMissing:
+                  summary: Submission not found
+                  value:
+                    error:
+                      code: not_found
+                      message: Submission not found
+                placeMissing:
+                  summary: Place not found
+                  value:
+                    error:
+                      code: not_found
+                      message: Place not found
+        "500":
+          description: Database error while updating the submission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to update submission
+
+  /api/submissions/{id}/approve:
+    parameters:
+      - $ref: "#/components/parameters/SubmissionId"
+    post:
+      tags: [Submissions]
+      summary: Approve a submission
+      description: |
+        Approves a `pending` submission.
+
+        - If `experienceId` is omitted, creates a new Experience from the
+          submission's `placeId`, `content` (title derived from content;
+          description set to full content), and `goodToKnow`, then associates it.
+        - If `experienceId` is provided, associates the submission with that
+          existing Experience without creating a duplicate.
+        - Sets status to `approved`. The original Submission row is preserved.
+
+        Only `pending` submissions may be approved.
+      operationId: approveSubmission
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApproveSubmissionRequest"
+            examples:
+              createNew:
+                summary: Create a new experience
+                value: {}
+              useExisting:
+                summary: Associate an existing experience
+                value:
+                  experienceId: 11111111-1111-4111-8111-111111111111
+      responses:
+        "200":
+          description: Submission approved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          description: Invalid submission id or approval input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Submission or referenced experience not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Submission is not in a pending state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: conflict
+                  message: Submission cannot be approved unless it is pending
+        "500":
+          description: Database error while approving the submission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to approve submission
+
+  /api/submissions/{id}/reject:
+    parameters:
+      - $ref: "#/components/parameters/SubmissionId"
+    post:
+      tags: [Submissions]
+      summary: Reject a submission
+      description: |
+        Rejects a `pending` submission by setting status to `rejected`.
+        The Submission row remains in the database. Only `pending` submissions
+        may be rejected.
+      operationId: rejectSubmission
+      responses:
+        "200":
+          description: Submission rejected successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          description: Invalid submission id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Submission not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Submission not found
+        "409":
+          description: Submission is not in a pending state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: conflict
+                  message: Submission cannot be rejected unless it is pending
+        "500":
+          description: Database error while rejecting the submission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to reject submission
+
+  /api/submissions/{id}/merge:
+    parameters:
+      - $ref: "#/components/parameters/SubmissionId"
+    post:
+      tags: [Submissions]
+      summary: Merge a submission into an existing experience
+      description: |
+        Associates a `pending` submission with an existing Experience and sets
+        status to `approved`. Does not modify or delete the original submission
+        content. Only `pending` submissions may be merged.
+      operationId: mergeSubmission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MergeSubmissionRequest"
+            example:
+              experienceId: 11111111-1111-4111-8111-111111111111
+      responses:
+        "200":
+          description: Submission merged successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          description: Invalid request body or merge input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Submission or referenced experience not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Submission is not in a pending state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: conflict
+                  message: Submission cannot be merged unless it is pending
+        "500":
+          description: Database error while merging the submission.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to merge submission
+
 components:
   parameters:
     PlaceSlug:
@@ -992,6 +1456,16 @@ components:
       in: path
       required: true
       description: Tag primary key (UUID).
+      schema:
+        type: string
+        format: uuid
+      example: 22222222-2222-4222-8222-222222222222
+
+    SubmissionId:
+      name: id
+      in: path
+      required: true
+      description: Submission primary key (UUID).
       schema:
         type: string
         format: uuid
@@ -1331,6 +1805,138 @@ components:
           enum: [true]
           description: Always `true` when the tag assignment is removed.
 
+    SubmissionStatus:
+      type: string
+      enum:
+        - pending
+        - approved
+        - rejected
+
+    Submission:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - userId
+        - placeId
+        - experienceId
+        - content
+        - goodToKnow
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+          description: Authenticated contributor; never accepted from the client body.
+        placeId:
+          type: string
+          format: uuid
+        experienceId:
+          type: string
+          format: uuid
+          nullable: true
+        content:
+          type: string
+          maxLength: 10000
+        goodToKnow:
+          type: string
+          nullable: true
+          maxLength: 10000
+        status:
+          $ref: "#/components/schemas/SubmissionStatus"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateSubmissionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - placeId
+        - content
+      properties:
+        placeId:
+          type: string
+          format: uuid
+        content:
+          type: string
+          minLength: 1
+          maxLength: 10000
+        goodToKnow:
+          type: string
+          nullable: true
+          maxLength: 10000
+
+    UpdateSubmissionRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      description: |
+        Partial update. Only `placeId`, `content`, and `goodToKnow` are allowed.
+        Status changes are not accepted here.
+      properties:
+        placeId:
+          type: string
+          format: uuid
+        content:
+          type: string
+          minLength: 1
+          maxLength: 10000
+        goodToKnow:
+          type: string
+          nullable: true
+          maxLength: 10000
+
+    ApproveSubmissionRequest:
+      type: object
+      additionalProperties: false
+      description: |
+        Optional body. Omit `experienceId` (or send `{}`) to create a new
+        Experience from the submission. Provide `experienceId` to associate an
+        existing Experience.
+      properties:
+        experienceId:
+          type: string
+          format: uuid
+
+    MergeSubmissionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - experienceId
+      properties:
+        experienceId:
+          type: string
+          format: uuid
+
+    SubmissionResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - submission
+      properties:
+        submission:
+          $ref: "#/components/schemas/Submission"
+
+    SubmissionListResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - submissions
+      properties:
+        submissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+
     ApiErrorCode:
       type: string
       enum:
@@ -1339,6 +1945,7 @@ components:
         - conflict
         - database_error
         - invalid_request
+        - unauthorized
 
     ErrorBody:
       type: object

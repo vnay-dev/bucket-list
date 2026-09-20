@@ -5,7 +5,8 @@ export type ApiErrorCode =
   | "not_found"
   | "conflict"
   | "database_error"
-  | "invalid_request";
+  | "invalid_request"
+  | "unauthorized";
 
 type ApiErrorBody = {
   error: {

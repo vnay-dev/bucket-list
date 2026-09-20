@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --env-file=.env.local --import tsx --test tests/places.validation.test.ts tests/places.api.test.ts tests/experiences.validation.test.ts tests/experiences.api.test.ts"
+    "test": "node --env-file=.env.local --import tsx --test tests/places.validation.test.ts tests/places.api.test.ts tests/experiences.validation.test.ts tests/experiences.api.test.ts tests/submissions.validation.test.ts tests/submissions.api.test.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

@@ -15,6 +15,11 @@ Currently documented areas:
 
 - Places (`/api/places`)
 - Experiences and experience tag assignments (`/api/experiences`)
+- Submissions, including approve / reject / merge (`/api/submissions`)
+
+Creating a submission requires an authenticated user. Authentication is not
+implemented yet, so `POST /api/submissions` returns `401 unauthorized` until an
+auth layer supplies the user identity. Do not send `userId` in request bodies.
 
 ## How to use the specification
 
