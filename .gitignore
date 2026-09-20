@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# Local QA → Production promotion logs (JSON)
+/promotion-logs
+
 # debug
 npm-debug.log*
 yarn-debug.log*
