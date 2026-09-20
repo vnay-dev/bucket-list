@@ -1,0 +1,372 @@
+.root {
+  width: 100%;
+}
+
+.notice {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid #d8e5d8;
+  background: #f3f7f3;
+  color: #1f4d2a;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.error {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid #ead4d4;
+  background: #f8eeee;
+  color: #8a1f1f;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.addSection {
+  margin-bottom: 36px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.sectionTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-muted);
+  margin-bottom: 8px;
+}
+
+.sectionCopy {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--admin-muted);
+  margin-bottom: 16px;
+  max-width: 40rem;
+}
+
+.lookupForm {
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--admin-text);
+}
+
+.lookupRow {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  padding: 10px 12px;
+  border-radius: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.input:disabled {
+  opacity: 0.65;
+}
+
+.fieldError {
+  font-size: 0.8125rem;
+  color: #8a1f1f;
+}
+
+.lookupResult {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 0 0;
+}
+
+.lookupHint {
+  font-size: 0.875rem;
+  color: var(--admin-muted);
+}
+
+.memberIdentity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.avatar,
+.initials {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.avatar {
+  object-fit: cover;
+  background: var(--admin-border);
+}
+
+.initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ebe8e2;
+  color: var(--admin-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.memberMeta {
+  min-width: 0;
+}
+
+.memberName {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: var(--admin-text);
+  overflow-wrap: anywhere;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.memberEmail {
+  margin-top: 2px;
+  font-size: 0.875rem;
+  color: var(--admin-muted);
+  overflow-wrap: anywhere;
+}
+
+.memberRole {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+.youBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--admin-border);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--admin-muted);
+}
+
+.empty {
+  padding: 28px 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--admin-muted);
+}
+
+.list {
+  list-style: none;
+  border-top: 1px solid var(--admin-border);
+  margin-top: 16px;
+}
+
+.item {
+  border-bottom: 1px solid var(--admin-border);
+  padding: 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.itemMain {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.itemDetails {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.roleBadge {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.joined {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.protectedNote {
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+  line-height: 1.4;
+}
+
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+  appearance: none;
+  min-height: 44px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.primaryButton {
+  border: 1px solid var(--admin-text);
+  background: var(--admin-text);
+  color: #ffffff;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: #333333;
+}
+
+.secondaryButton {
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+}
+
+.secondaryButton:hover:not(:disabled) {
+  border-color: #cfcbc3;
+}
+
+.dangerButton {
+  border: 1px solid #d8b4b4;
+  background: #ffffff;
+  color: #8a1f1f;
+}
+
+.dangerButton:hover:not(:disabled) {
+  background: #f8eeee;
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.dangerButton:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled,
+.dangerButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(85vh, 720px);
+  margin: auto;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  padding: 0;
+  border-radius: 4px;
+}
+
+.dialog::backdrop {
+  background: rgba(26, 26, 26, 0.35);
+}
+
+.dialogInner {
+  padding: 24px 20px 20px;
+  overflow: auto;
+}
+
+.dialogTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.dialogCopy {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--admin-muted);
+  margin-bottom: 20px;
+  overflow-wrap: anywhere;
+}
+
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .itemMain {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .itemDetails {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .lookupRow,
+  .lookupResult,
+  .rowActions,
+  .dialogActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .primaryButton,
+  .secondaryButton,
+  .dangerButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .dialogInner {
+    padding: 20px 16px 16px;
+  }
+}

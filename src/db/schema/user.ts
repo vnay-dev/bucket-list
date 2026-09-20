@@ -14,6 +14,9 @@ export const user = pgTable(
       .notNull(),
   },
   (table) => [
-    check("user_role_check", sql`${table.role} in ('user', 'curator')`),
+    check(
+      "user_role_check",
+      sql`${table.role} in ('user', 'curator', 'superadmin')`,
+    ),
   ],
 );

@@ -1,0 +1,87 @@
+.page {
+  --login-bg: #f7f6f3;
+  --login-surface: #ffffff;
+  --login-text: #1a1a1a;
+  --login-muted: #5c5c5c;
+  --login-border: #e6e4df;
+  --login-error: #8a1f1f;
+  --login-error-bg: #f8eeee;
+
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  background: var(--login-bg);
+  color: var(--login-text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.panel {
+  width: 100%;
+  max-width: 400px;
+  background: var(--login-surface);
+  border: 1px solid var(--login-border);
+  padding: 40px 32px;
+}
+
+.brand {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--login-muted);
+  margin-bottom: 28px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--login-muted);
+  margin-bottom: 28px;
+}
+
+.error {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--login-error);
+  background: var(--login-error-bg);
+  border: 1px solid #ead4d4;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.primary {
+  appearance: none;
+  width: 100%;
+  border: none;
+  background: var(--login-text);
+  color: #ffffff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.primary:hover {
+  background: #333333;
+}
+
+.primary:focus-visible {
+  outline: 2px solid var(--login-text);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 32px 24px;
+  }
+}

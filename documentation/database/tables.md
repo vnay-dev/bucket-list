@@ -13,7 +13,7 @@ Finalized V1 model. Seven tables.
 | `id` | UUID | required | — | PK | |
 | `name` | TEXT | required | — | | |
 | `avatar` | TEXT | optional | — | | |
-| `role` | TEXT | required | `user` | allowed: `user`, `curator` | Constrained value |
+| `role` | TEXT | required | `user` | allowed: `user`, `curator`, `superadmin` | Constrained value |
 | `email` | TEXT | required | — | UNIQUE | |
 | `created_at` | TIMESTAMPTZ | required | `NOW()` | | |
 

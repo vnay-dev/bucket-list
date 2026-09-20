@@ -1,0 +1,34 @@
+.root {
+  width: 100%;
+}
+
+.panel {
+  border-top: 1px solid var(--admin-border);
+  padding-top: 28px;
+}
+
+.note {
+  max-width: 36rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--admin-muted);
+}
+
+.link {
+  display: inline-flex;
+  margin-top: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link:hover {
+  color: var(--admin-muted);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 3px;
+}

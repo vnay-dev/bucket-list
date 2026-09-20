@@ -17,9 +17,10 @@ Currently documented areas:
 - Experiences and experience tag assignments (`/api/experiences`)
 - Submissions, including approve / reject / merge (`/api/submissions`)
 
-Creating a submission requires an authenticated user. Authentication is not
-implemented yet, so `POST /api/submissions` returns `401 unauthorized` until an
-auth layer supplies the user identity. Do not send `userId` in request bodies.
+Creating a submission requires an authenticated Auth.js session. The submission
+`userId` is taken from the server-side user identity — never from the request
+body. Unauthenticated requests receive `401 unauthorized`. See
+[Authentication](../authentication.md).
 
 ## How to use the specification
 

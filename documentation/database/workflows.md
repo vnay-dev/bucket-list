@@ -6,11 +6,13 @@ Important V1 data workflows. Application/admin code owns these flows; the databa
 
 ## 1. User submission
 
-1. User signs in
-2. User submits an experience
-3. A `Submission` is created
+1. User signs in with Google (Auth.js); a `User` row is created on first login
+2. User submits an experience via the authenticated API
+3. A `Submission` is created with `user_id` from the session (never from the client body)
 4. `status` = `pending`
 5. A curator reviews it
+
+See [Authentication](../authentication.md) for sign-in and role details.
 
 ---
 

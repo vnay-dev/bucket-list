@@ -1,0 +1,236 @@
+.root {
+  width: 100%;
+}
+
+.createLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--admin-text);
+  background: var(--admin-text);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.createLink:hover {
+  background: #333333;
+}
+
+.createLink:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.notice {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid #d8e5d8;
+  background: #f3f7f3;
+  color: #1f4d2a;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.error {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid #ead4d4;
+  background: #f8eeee;
+  color: #8a1f1f;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 28px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--admin-text);
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  padding: 10px 12px;
+  border-radius: 4px;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.filterActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filterButton {
+  appearance: none;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.filterButton:hover {
+  border-color: #cfcbc3;
+}
+
+.filterButton:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 2px;
+}
+
+.clearLink {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.clearLink:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 3px;
+}
+
+.empty {
+  padding: 28px 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--admin-muted);
+}
+
+.list {
+  list-style: none;
+  border-top: 1px solid var(--admin-border);
+}
+
+.item {
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.itemLink {
+  display: block;
+  padding: 18px 0;
+  color: inherit;
+}
+
+.itemLink:focus-visible {
+  outline: 2px solid var(--admin-accent);
+  outline-offset: 4px;
+}
+
+.itemTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.itemTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+  color: var(--admin-text);
+  overflow-wrap: anywhere;
+}
+
+.itemMeta {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+  padding-top: 2px;
+}
+
+.itemLocation {
+  margin-top: 6px;
+  font-size: 0.875rem;
+  color: var(--admin-muted);
+  overflow-wrap: anywhere;
+}
+
+.itemSlug {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.itemCoords {
+  margin-top: 4px;
+  font-size: 0.8125rem;
+  color: var(--admin-muted);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 800px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .filterActions {
+    width: 100%;
+  }
+
+  .filterButton {
+    flex: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .itemTop {
+    flex-direction: column;
+    gap: 6px;
+  }
+}

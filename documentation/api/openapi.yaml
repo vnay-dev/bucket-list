@@ -10,10 +10,10 @@ info:
     validation layer, repository, and API tests. Do not assume undocumented
     endpoints or fields exist.
 
-    Authentication is not implemented yet. Creating a submission requires an
-    authenticated user identity supplied by a future auth layer; until then
-    `POST /api/submissions` returns `401 unauthorized`. Do not send `userId`
-    in request bodies as a trusted identity.
+    Creating a submission requires an authenticated Auth.js (Google OAuth)
+    session. The submission `userId` is taken from the server-side user
+    identity — never from the request body. Unauthenticated requests receive
+    `401 unauthorized`.
 servers:
   - url: http://localhost:3000
     description: Local development server
@@ -1050,9 +1050,9 @@ paths:
       description: |
         Creates a pending submission for the authenticated user.
 
-        Authentication is not implemented yet. The route requires an authenticated
-        user identity from the auth layer and does not accept `userId` from the
-        request body. Until auth is wired up, this endpoint returns `401`.
+        Requires an authenticated Auth.js session. The submission `userId` is
+        taken from that identity and is not accepted from the request body.
+        Unauthenticated requests receive `401 unauthorized`.
 
         `placeId` must reference an existing place. `content` is required
         (1–10000 characters after trim). `goodToKnow` is optional (at most
@@ -1946,6 +1946,7 @@ components:
         - database_error
         - invalid_request
         - unauthorized
+        - forbidden
 
     ErrorBody:
       type: object

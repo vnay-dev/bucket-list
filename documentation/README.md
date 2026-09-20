@@ -8,6 +8,7 @@ It holds documentation that future developers can use to understand how the syst
 
 - **Database** — finalized V1 data model (tables, relationships, constraints, indexes, workflows).
 - **API** — HTTP API contract documented as OpenAPI for implemented endpoints.
+- **Authentication** — Auth.js Google OAuth, roles, and server-side authorization.
 
 ## Keeping docs current
 
@@ -17,3 +18,4 @@ Update these files whenever the underlying implementation changes. Documentation
 
 - [Database](./database/README.md) — V1 PostgreSQL data model (Neon + Drizzle)
 - [API](./api/README.md) — HTTP API OpenAPI specification
+- [Authentication](./authentication.md) — Google OAuth, roles, admin access, setup
