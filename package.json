@@ -7,11 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --env-file=.env.local --import tsx --test tests/places.validation.test.ts tests/places.api.test.ts tests/experiences.validation.test.ts tests/experiences.api.test.ts tests/submissions.validation.test.ts tests/submissions.api.test.ts tests/auth.authorization.test.ts tests/admin.dashboard.test.ts tests/admin.submissions.test.ts tests/admin.experiences.test.ts tests/admin.places.test.ts tests/admin.tags.test.ts tests/admin.team.test.ts tests/unauthorized.page.test.ts",
+    "test": "node --env-file=.env.local --import tsx --test tests/places.validation.test.ts tests/places.api.test.ts tests/experiences.validation.test.ts tests/experiences.api.test.ts tests/submissions.validation.test.ts tests/submissions.api.test.ts tests/auth.authorization.test.ts tests/admin.dashboard.test.ts tests/admin.submissions.test.ts tests/admin.experiences.test.ts tests/admin.places.test.ts tests/admin.tags.test.ts tests/admin.team.test.ts tests/unauthorized.page.test.ts tests/promotion.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:check": "drizzle-kit check",
-    "promote-superadmin": "tsx --env-file=.env.local scripts/promote-superadmin.ts"
+    "promote-superadmin": "tsx --env-file=.env.local scripts/promote-superadmin.ts",
+    "promote:qa": "tsx --env-file=.env.local scripts/promote-qa.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

@@ -74,3 +74,16 @@ Experience → ExperienceTag → Tag
 | `Experience` content | Curated public content |
 
 Do not assume the public experience must display the original submission text exactly.
+
+---
+
+## 8. QA → Production promotion
+
+When curated content in QA is ready for launch, promote Places, Experiences, Tags, and ExperienceTags associated with **approved** submissions into Production via the CLI:
+
+```bash
+npm run promote:qa -- --dry-run
+npm run promote:qa -- --confirm-production
+```
+
+Users, Wishlists, and Submissions are not promoted. See [Promotion](../promotion.md) for environment variables, idempotency, rollback (Neon), and limitations.
