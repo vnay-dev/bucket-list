@@ -1,0 +1,21 @@
+---
+description: Core technical principles for this project
+alwaysApply: true
+---
+
+# Tech Guidelines
+
+- Prefer simple solutions over unnecessary abstraction.
+- Keep the architecture modular but avoid premature complexity.
+- Use TypeScript strictly.
+- Keep components small and reusable where reuse is actually needed.
+- Keep business logic separate from presentation logic.
+- Never expose secrets or environment variables to the client.
+- Validate and sanitize user-controlled input on the server.
+- Keep database access server-side.
+- Optimize for accessibility, SEO, performance, and responsive design.
+- Do not introduce a dependency when the existing platform or a small utility is sufficient.
+- Avoid premature optimization and over-engineering.
+- Follow consistent naming conventions.
+- Keep code consistently formatted and easy to read (clear indentation, spacing, and structure).
+- Write code that another developer can easily understand and maintain.
