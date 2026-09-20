@@ -50,12 +50,35 @@ export async function findUserByEmail(email: string): Promise<AppUser | null> {
   return row ? toAppUser(row) : null;
 }
 
-export async function countSuperAdmins(): Promise<number> {
+async function defaultCountSuperAdmins(): Promise<number> {
   const [result] = await db
     .select({ value: count() })
     .from(user)
     .where(eq(user.role, "superadmin"));
   return result?.value ?? 0;
+}
+
+type CountSuperAdminsResolver = () => Promise<number>;
+
+let countSuperAdminsResolver: CountSuperAdminsResolver =
+  defaultCountSuperAdmins;
+
+/**
+ * Test-only seam so team tests can simulate a last-superadmin condition
+ * without assuming the shared database has exactly one superadmin.
+ */
+export function setCountSuperAdminsResolver(
+  resolver: CountSuperAdminsResolver,
+): void {
+  countSuperAdminsResolver = resolver;
+}
+
+export function resetCountSuperAdminsResolver(): void {
+  countSuperAdminsResolver = defaultCountSuperAdmins;
+}
+
+export async function countSuperAdmins(): Promise<number> {
+  return countSuperAdminsResolver();
 }
 
 /**
