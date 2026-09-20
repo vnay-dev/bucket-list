@@ -1,0 +1,12 @@
+extends:
+  - recommended
+
+rules:
+  # Auth is not implemented yet; empty security documents that accurately.
+  security-defined: off
+  # Spec intentionally documents local development; production URL is not fixed.
+  no-server-example.com: off
+  # License metadata is optional for this internal project contract.
+  info-license: off
+  # Do not invent 4XX responses for operations that do not return them.
+  operation-4xx-response: off

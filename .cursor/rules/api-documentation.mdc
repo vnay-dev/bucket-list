@@ -1,0 +1,21 @@
+---
+description: Keep OpenAPI documentation synchronized with API implementation changes
+alwaysApply: true
+---
+
+# API documentation synchronization
+
+Whenever an API endpoint is created, modified, renamed, or removed, inspect `documentation/api/openapi.yaml`.
+
+## Required practice
+
+- Update the OpenAPI specification in the same development task whenever the API contract changes.
+- Keep request schemas, response schemas, parameters, validation behavior, status codes, and error responses synchronized with the implementation.
+- Do not document behavior that the API does not actually implement.
+- Do not modify API behavior merely to make the documentation match unless explicitly requested.
+- API tests and OpenAPI documentation should be updated together when an API contract changes.
+- Before completing API-related work, validate that the OpenAPI documentation matches the implementation and tests.
+
+## Scope
+
+This rule applies to all future API work in this project, not only the Place API.

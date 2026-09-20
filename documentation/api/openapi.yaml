@@ -1,0 +1,582 @@
+openapi: 3.0.3
+info:
+  title: Bucket List API
+  version: 0.1.0
+  description: |
+    HTTP API for the Bucket List application.
+
+    This specification documents the currently implemented Place endpoints.
+    It is derived from the Next.js route handlers, validation layer, repository,
+    and API tests. Do not assume undocumented endpoints or fields exist.
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+security: []
+tags:
+  - name: Places
+    description: Manage geographic places where experiences are scoped.
+paths:
+  /api/places:
+    get:
+      tags: [Places]
+      summary: List places
+      description: |
+        Returns all places ordered by name ascending.
+      operationId: listPlaces
+      responses:
+        "200":
+          description: Places retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceListResponse"
+              example:
+                places:
+                  - id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                    name: Blue Ridge
+                    slug: blue-ridge
+                    city: Asheville
+                    state: NC
+                    latitude: 35.5951
+                    longitude: -82.5515
+        "500":
+          description: Database error while retrieving places.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to retrieve places
+    post:
+      tags: [Places]
+      summary: Create a place
+      description: |
+        Creates a place with name, slug, city, state, latitude, and longitude.
+
+        Strings are trimmed. Slug must match lowercase alphanumeric segments
+        separated by single hyphens. Latitude must be between -90 and 90.
+        Longitude must be between -180 and 180. Coordinates may be sent as
+        numbers or numeric strings.
+      operationId: createPlace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlaceRequest"
+            example:
+              name: Blue Ridge
+              slug: blue-ridge
+              city: Asheville
+              state: NC
+              latitude: 35.5951
+              longitude: -82.5515
+      responses:
+        "201":
+          description: Place created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceResponse"
+              example:
+                place:
+                  id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                  name: Blue Ridge
+                  slug: blue-ridge
+                  city: Asheville
+                  state: NC
+                  latitude: 35.5951
+                  longitude: -82.5515
+        "400":
+          description: |
+            Invalid request body or invalid place input.
+
+            - `invalid_request` when the body is not valid JSON.
+            - `invalid_input` when required fields are missing, types are wrong,
+              the slug format is invalid, or coordinates are out of range.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidJson:
+                  summary: Body is not valid JSON
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request body must be valid JSON
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Invalid place input
+                      details:
+                        slug: slug is required
+                        city: city is required
+                        state: state is required
+                        latitude: latitude must be a finite number
+                        longitude: longitude must be a finite number
+                invalidCoordinates:
+                  summary: Invalid coordinates
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Invalid place input
+                      details:
+                        latitude: latitude must be between -90 and 90
+                        longitude: longitude must be between -180 and 180
+                nonObjectBody:
+                  summary: Body is not a JSON object
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Request body must be a JSON object
+        "409":
+          description: Duplicate slug conflict.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: conflict
+                  message: A place with this slug already exists
+        "500":
+          description: Database error while creating the place.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to create place
+
+  /api/places/{slug}:
+    parameters:
+      - $ref: "#/components/parameters/PlaceSlug"
+    get:
+      tags: [Places]
+      summary: Get a place by slug
+      description: Returns a single place identified by its slug.
+      operationId: getPlaceBySlug
+      responses:
+        "200":
+          description: Place retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceResponse"
+              example:
+                place:
+                  id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                  name: Blue Ridge
+                  slug: blue-ridge
+                  city: Asheville
+                  state: NC
+                  latitude: 35.5951
+                  longitude: -82.5515
+        "400":
+          description: Path slug failed validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: invalid_input
+                  message: Invalid place slug
+                  details:
+                    slug: slug must use lowercase letters, numbers, and single hyphens only
+        "404":
+          description: No place exists for the given slug.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Place not found
+        "500":
+          description: Database error while retrieving the place.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to retrieve place
+    patch:
+      tags: [Places]
+      summary: Update a place by slug
+      description: |
+        Partially updates an existing place. At least one supported field must
+        be provided. Unsupported fields are rejected. Provided fields are
+        validated with the same rules as create. Changing slug to a value that
+        already exists returns a conflict.
+      operationId: updatePlaceBySlug
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlaceRequest"
+            example:
+              name: Updated Blue Ridge
+              city: Asheville
+      responses:
+        "200":
+          description: Place updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaceResponse"
+              example:
+                place:
+                  id: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                  name: Updated Blue Ridge
+                  slug: blue-ridge
+                  city: Asheville
+                  state: NC
+                  latitude: 35.5951
+                  longitude: -82.5515
+        "400":
+          description: |
+            Invalid path slug, invalid JSON body, empty update body,
+            unsupported fields, or invalid field values.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidJson:
+                  summary: Body is not valid JSON
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request body must be valid JSON
+                emptyUpdate:
+                  summary: No fields provided
+                  value:
+                    error:
+                      code: invalid_input
+                      message: At least one field is required to update a place
+                invalidCoordinates:
+                  summary: Invalid coordinate update
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Invalid place input
+                      details:
+                        latitude: latitude must be between -90 and 90
+                unsupportedField:
+                  summary: Unsupported field in body
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Request contains unsupported fields
+                      details:
+                        unknown: unsupported field
+        "404":
+          description: No place exists for the given slug.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Place not found
+        "409":
+          description: Duplicate slug conflict when renaming a place.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: conflict
+                  message: A place with this slug already exists
+        "500":
+          description: Database error while updating the place.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to update place
+    delete:
+      tags: [Places]
+      summary: Delete a place by slug
+      description: |
+        Deletes a place when database foreign-key rules allow it.
+
+        Deletion is blocked when related records reference the place
+        (for example experiences or submissions with ON DELETE RESTRICT).
+        In that case the API returns 409 without deleting the place.
+      operationId: deletePlaceBySlug
+      responses:
+        "200":
+          description: Place deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletePlaceResponse"
+              example:
+                deleted: true
+        "400":
+          description: Path slug failed validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: invalid_input
+                  message: Invalid place slug
+                  details:
+                    slug: slug must use lowercase letters, numbers, and single hyphens only
+        "404":
+          description: No place exists for the given slug.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Place not found
+        "409":
+          description: |
+            Place cannot be deleted while related records exist
+            (foreign-key restrict / restrict violation).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: conflict
+                  message: Place cannot be deleted while related records exist
+        "500":
+          description: Database error while deleting the place.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to delete place
+
+components:
+  parameters:
+    PlaceSlug:
+      name: slug
+      in: path
+      required: true
+      description: |
+        Place slug. Must use lowercase letters, numbers, and single hyphens only
+        (`^[a-z0-9]+(?:-[a-z0-9]+)*$`).
+      schema:
+        $ref: "#/components/schemas/PlaceSlug"
+      example: blue-ridge
+
+  schemas:
+    PlaceSlug:
+      type: string
+      pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      description: URL slug using lowercase alphanumeric segments separated by single hyphens.
+      example: blue-ridge
+
+    Place:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - slug
+        - city
+        - state
+        - latitude
+        - longitude
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Place primary key.
+        name:
+          type: string
+          description: Display name.
+        slug:
+          $ref: "#/components/schemas/PlaceSlug"
+        city:
+          type: string
+        state:
+          type: string
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+
+    CreatePlaceRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+        - slug
+        - city
+        - state
+        - latitude
+        - longitude
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Required. Trimmed before save.
+        slug:
+          $ref: "#/components/schemas/PlaceSlug"
+        city:
+          type: string
+          minLength: 1
+          description: Required. Trimmed before save.
+        state:
+          type: string
+          minLength: 1
+          description: Required. Trimmed before save.
+        latitude:
+          oneOf:
+            - type: number
+              format: double
+              minimum: -90
+              maximum: 90
+            - type: string
+              description: Numeric string accepted by validation and coerced to a number.
+          description: Required. Must be a finite value between -90 and 90.
+        longitude:
+          oneOf:
+            - type: number
+              format: double
+              minimum: -180
+              maximum: 180
+            - type: string
+              description: Numeric string accepted by validation and coerced to a number.
+          description: Required. Must be a finite value between -180 and 180.
+
+    UpdatePlaceRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      description: |
+        Partial update. Only these fields are allowed. At least one field is required.
+        Unknown fields cause `invalid_input`.
+      properties:
+        name:
+          type: string
+          minLength: 1
+        slug:
+          $ref: "#/components/schemas/PlaceSlug"
+        city:
+          type: string
+          minLength: 1
+        state:
+          type: string
+          minLength: 1
+        latitude:
+          oneOf:
+            - type: number
+              format: double
+              minimum: -90
+              maximum: 90
+            - type: string
+          description: Must be a finite value between -90 and 90 when provided.
+        longitude:
+          oneOf:
+            - type: number
+              format: double
+              minimum: -180
+              maximum: 180
+            - type: string
+          description: Must be a finite value between -180 and 180 when provided.
+
+    PlaceResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - place
+      properties:
+        place:
+          $ref: "#/components/schemas/Place"
+
+    PlaceListResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - places
+      properties:
+        places:
+          type: array
+          items:
+            $ref: "#/components/schemas/Place"
+
+    DeletePlaceResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - deleted
+      properties:
+        deleted:
+          type: boolean
+          enum: [true]
+          description: Always `true` when deletion succeeds.
+
+    ApiErrorCode:
+      type: string
+      enum:
+        - invalid_input
+        - not_found
+        - conflict
+        - database_error
+        - invalid_request
+
+    ErrorBody:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+      properties:
+        code:
+          $ref: "#/components/schemas/ApiErrorCode"
+        message:
+          type: string
+        details:
+          description: |
+            Optional field-level validation details. When present for place
+            validation failures, this is an object mapping field names to
+            human-readable messages (for example `latitude`, `slug`).
+          type: object
+          additionalProperties:
+            type: string
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - error
+      properties:
+        error:
+          $ref: "#/components/schemas/ErrorBody"
