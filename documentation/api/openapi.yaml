@@ -5,9 +5,9 @@ info:
   description: |
     HTTP API for the Bucket List application.
 
-    This specification documents the currently implemented Place endpoints.
-    It is derived from the Next.js route handlers, validation layer, repository,
-    and API tests. Do not assume undocumented endpoints or fields exist.
+    This specification documents the currently implemented Place and Experience
+    endpoints. It is derived from the Next.js route handlers, validation layer,
+    repository, and API tests. Do not assume undocumented endpoints or fields exist.
 servers:
   - url: http://localhost:3000
     description: Local development server
@@ -15,6 +15,8 @@ security: []
 tags:
   - name: Places
     description: Manage geographic places where experiences are scoped.
+  - name: Experiences
+    description: Manage curated experiences and their tag assignments.
 paths:
   /api/places:
     get:
@@ -376,6 +378,592 @@ paths:
                   code: database_error
                   message: Unable to delete place
 
+  /api/experiences:
+    get:
+      tags: [Experiences]
+      summary: List experiences
+      description: |
+        Returns experiences ordered by title ascending. Optionally filter by
+        `placeId` query parameter.
+      operationId: listExperiences
+      parameters:
+        - name: placeId
+          in: query
+          required: false
+          description: When provided, only experiences for this place are returned.
+          schema:
+            type: string
+            format: uuid
+          example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+      responses:
+        "200":
+          description: Experiences retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperienceListResponse"
+              example:
+                experiences:
+                  - id: 11111111-1111-4111-8111-111111111111
+                    placeId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                    title: Sunset Overlook
+                    description: Watch the sun set over the ridge
+                    goodToKnow: Arrive 30 minutes early
+                    createdAt: "2026-09-20T12:00:00.000Z"
+                    updatedAt: "2026-09-20T12:00:00.000Z"
+                    tags:
+                      - id: 22222222-2222-4222-8222-222222222222
+                        name: Sunset
+        "400":
+          description: Invalid `placeId` query parameter.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: invalid_input
+                  message: Invalid placeId query parameter
+                  details:
+                    placeId: placeId must be a valid UUID
+        "500":
+          description: Database error while retrieving experiences.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to retrieve experiences
+    post:
+      tags: [Experiences]
+      summary: Create an experience
+      description: |
+        Creates an experience for an existing place.
+
+        Strings are trimmed. `title` is required (1–200 characters after trim).
+        `description` and `goodToKnow` are optional (each at most 10000
+        characters after trim). Empty optional strings are stored as null.
+        `placeId` must be a valid UUID referencing an existing place.
+      operationId: createExperience
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExperienceRequest"
+            example:
+              placeId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+              title: Sunset Overlook
+              description: Watch the sun set over the ridge
+              goodToKnow: Arrive 30 minutes early
+      responses:
+        "201":
+          description: Experience created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperienceResponse"
+              example:
+                experience:
+                  id: 11111111-1111-4111-8111-111111111111
+                  placeId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                  title: Sunset Overlook
+                  description: Watch the sun set over the ridge
+                  goodToKnow: Arrive 30 minutes early
+                  createdAt: "2026-09-20T12:00:00.000Z"
+                  updatedAt: "2026-09-20T12:00:00.000Z"
+                  tags: []
+        "400":
+          description: |
+            Invalid request body or invalid experience input.
+
+            - `invalid_request` when the body is not valid JSON.
+            - `invalid_input` when required fields are missing, types are wrong,
+              UUIDs are invalid, or string length limits are exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidJson:
+                  summary: Body is not valid JSON
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request body must be valid JSON
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Invalid experience input
+                      details:
+                        placeId: placeId is required
+                        title: title is required
+                nonObjectBody:
+                  summary: Body is not a JSON object
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Request body must be a JSON object
+        "404":
+          description: Referenced place does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Place not found
+        "500":
+          description: Database error while creating the experience.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to create experience
+
+  /api/experiences/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ExperienceId"
+    get:
+      tags: [Experiences]
+      summary: Get an experience by id
+      description: |
+        Returns a single experience identified by its id, including associated
+        tags ordered by name ascending.
+      operationId: getExperienceById
+      responses:
+        "200":
+          description: Experience retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperienceResponse"
+              example:
+                experience:
+                  id: 11111111-1111-4111-8111-111111111111
+                  placeId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                  title: Sunset Overlook
+                  description: Watch the sun set over the ridge
+                  goodToKnow: Arrive 30 minutes early
+                  createdAt: "2026-09-20T12:00:00.000Z"
+                  updatedAt: "2026-09-20T12:00:00.000Z"
+                  tags:
+                    - id: 22222222-2222-4222-8222-222222222222
+                      name: Sunset
+        "400":
+          description: Path id failed UUID validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: invalid_input
+                  message: Invalid experience id
+                  details:
+                    id: id must be a valid UUID
+        "404":
+          description: No experience exists for the given id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Experience not found
+        "500":
+          description: Database error while retrieving the experience.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to retrieve experience
+    patch:
+      tags: [Experiences]
+      summary: Update an experience by id
+      description: |
+        Partially updates an existing experience. At least one supported field
+        must be provided. Unsupported fields are rejected. Provided fields use
+        the same validation rules as create. When `placeId` is changed, the
+        referenced place must exist.
+      operationId: updateExperienceById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateExperienceRequest"
+            example:
+              title: Updated Sunset Overlook
+              goodToKnow: Bring a jacket
+      responses:
+        "200":
+          description: Experience updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperienceResponse"
+              example:
+                experience:
+                  id: 11111111-1111-4111-8111-111111111111
+                  placeId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                  title: Updated Sunset Overlook
+                  description: Watch the sun set over the ridge
+                  goodToKnow: Bring a jacket
+                  createdAt: "2026-09-20T12:00:00.000Z"
+                  updatedAt: "2026-09-20T12:30:00.000Z"
+                  tags: []
+        "400":
+          description: |
+            Invalid path id, invalid JSON body, empty update body,
+            unsupported fields, or invalid field values.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidJson:
+                  summary: Body is not valid JSON
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request body must be valid JSON
+                emptyUpdate:
+                  summary: No fields provided
+                  value:
+                    error:
+                      code: invalid_input
+                      message: At least one field is required to update an experience
+                unsupportedField:
+                  summary: Unsupported field in body
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Request contains unsupported fields
+                      details:
+                        unknown: unsupported field
+        "404":
+          description: |
+            Experience not found, or updated `placeId` references a missing place.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                experienceMissing:
+                  summary: Experience not found
+                  value:
+                    error:
+                      code: not_found
+                      message: Experience not found
+                placeMissing:
+                  summary: Place not found
+                  value:
+                    error:
+                      code: not_found
+                      message: Place not found
+        "500":
+          description: Database error while updating the experience.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to update experience
+    delete:
+      tags: [Experiences]
+      summary: Delete an experience by id
+      description: |
+        Deletes an experience. Related `experience_tag` and `wishlist` rows are
+        removed by database cascade. Related submissions keep their row and have
+        `experience_id` set to null by database rule.
+      operationId: deleteExperienceById
+      responses:
+        "200":
+          description: Experience deleted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteExperienceResponse"
+              example:
+                deleted: true
+        "400":
+          description: Path id failed UUID validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: invalid_input
+                  message: Invalid experience id
+                  details:
+                    id: id must be a valid UUID
+        "404":
+          description: No experience exists for the given id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Experience not found
+        "409":
+          description: |
+            Experience cannot be deleted due to a foreign-key restriction.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: conflict
+                  message: Related records prevent this operation
+        "500":
+          description: Database error while deleting the experience.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to delete experience
+
+  /api/experiences/{id}/tags:
+    parameters:
+      - $ref: "#/components/parameters/ExperienceId"
+    get:
+      tags: [Experiences]
+      summary: List tags for an experience
+      description: Returns tags assigned to the experience, ordered by name ascending.
+      operationId: listExperienceTags
+      responses:
+        "200":
+          description: Tags retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperienceTagsResponse"
+              example:
+                tags:
+                  - id: 22222222-2222-4222-8222-222222222222
+                    name: Sunset
+        "400":
+          description: Path id failed UUID validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: invalid_input
+                  message: Invalid experience id
+                  details:
+                    id: id must be a valid UUID
+        "404":
+          description: No experience exists for the given id.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: not_found
+                  message: Experience not found
+        "500":
+          description: Database error while retrieving experience tags.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to retrieve experience tags
+    post:
+      tags: [Experiences]
+      summary: Assign tags to an experience
+      description: |
+        Assigns one or more existing tags to an experience via the
+        `experience_tag` join table. Duplicate assignments are rejected by the
+        composite unique constraint. All tag ids must exist.
+      operationId: assignExperienceTags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignExperienceTagsRequest"
+            example:
+              tagIds:
+                - 22222222-2222-4222-8222-222222222222
+                - 33333333-3333-4333-8333-333333333333
+      responses:
+        "201":
+          description: Tags assigned successfully. Returns the full tag list for the experience.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExperienceTagsResponse"
+              example:
+                tags:
+                  - id: 22222222-2222-4222-8222-222222222222
+                    name: Sunset
+                  - id: 33333333-3333-4333-8333-333333333333
+                    name: Outdoor
+        "400":
+          description: |
+            Invalid path id, invalid JSON body, unsupported fields, empty
+            `tagIds`, or invalid UUID values.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidJson:
+                  summary: Body is not valid JSON
+                  value:
+                    error:
+                      code: invalid_request
+                      message: Request body must be valid JSON
+                emptyTagIds:
+                  summary: Empty tagIds array
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Invalid tag assignment input
+                      details:
+                        tagIds: tagIds must contain at least one tag id
+        "404":
+          description: Experience not found, or one or more tags were not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                experienceMissing:
+                  summary: Experience not found
+                  value:
+                    error:
+                      code: not_found
+                      message: Experience not found
+                tagMissing:
+                  summary: Tag not found
+                  value:
+                    error:
+                      code: not_found
+                      message: One or more tags were not found
+        "409":
+          description: One or more tags are already assigned to the experience.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: conflict
+                  message: One or more tags are already assigned to this experience
+        "500":
+          description: Database error while assigning tags.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to assign tags
+
+  /api/experiences/{id}/tags/{tagId}:
+    parameters:
+      - $ref: "#/components/parameters/ExperienceId"
+      - $ref: "#/components/parameters/TagId"
+    delete:
+      tags: [Experiences]
+      summary: Remove a tag from an experience
+      description: |
+        Removes the `experience_tag` relationship between the experience and tag.
+        Does not delete the tag itself.
+      operationId: removeExperienceTag
+      responses:
+        "200":
+          description: Tag assignment removed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteExperienceTagResponse"
+              example:
+                deleted: true
+        "400":
+          description: Path experience id or tag id failed UUID validation.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidExperienceId:
+                  summary: Invalid experience id
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Invalid experience id
+                      details:
+                        id: id must be a valid UUID
+                invalidTagId:
+                  summary: Invalid tag id
+                  value:
+                    error:
+                      code: invalid_input
+                      message: Invalid tag id
+                      details:
+                        tagId: tagId must be a valid UUID
+        "404":
+          description: |
+            Experience not found, or the tag is not assigned to the experience.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                experienceMissing:
+                  summary: Experience not found
+                  value:
+                    error:
+                      code: not_found
+                      message: Experience not found
+                tagNotAssigned:
+                  summary: Tag not assigned
+                  value:
+                    error:
+                      code: not_found
+                      message: Tag is not assigned to this experience
+        "500":
+          description: Database error while removing the tag assignment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error:
+                  code: database_error
+                  message: Unable to remove tag
+
 components:
   parameters:
     PlaceSlug:
@@ -388,6 +976,26 @@ components:
       schema:
         $ref: "#/components/schemas/PlaceSlug"
       example: blue-ridge
+
+    ExperienceId:
+      name: id
+      in: path
+      required: true
+      description: Experience primary key (UUID).
+      schema:
+        type: string
+        format: uuid
+      example: 11111111-1111-4111-8111-111111111111
+
+    TagId:
+      name: tagId
+      in: path
+      required: true
+      description: Tag primary key (UUID).
+      schema:
+        type: string
+        format: uuid
+      example: 22222222-2222-4222-8222-222222222222
 
   schemas:
     PlaceSlug:
@@ -543,6 +1151,186 @@ components:
           enum: [true]
           description: Always `true` when deletion succeeds.
 
+    Tag:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Tag primary key.
+        name:
+          type: string
+          description: Unique tag label.
+
+    Experience:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - placeId
+        - title
+        - description
+        - goodToKnow
+        - createdAt
+        - updatedAt
+        - tags
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Experience primary key.
+        placeId:
+          type: string
+          format: uuid
+          description: Foreign key to Place.
+        title:
+          type: string
+          maxLength: 200
+          description: Curated experience title.
+        description:
+          type: string
+          nullable: true
+          maxLength: 10000
+          description: Optional public description.
+        goodToKnow:
+          type: string
+          nullable: true
+          maxLength: 10000
+          description: Optional curated public-facing notes.
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          description: Tags assigned to this experience, ordered by name ascending.
+          items:
+            $ref: "#/components/schemas/Tag"
+
+    CreateExperienceRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - placeId
+        - title
+      properties:
+        placeId:
+          type: string
+          format: uuid
+          description: Required. Must reference an existing place.
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Required. Trimmed before save. Max 200 characters.
+        description:
+          type: string
+          nullable: true
+          maxLength: 10000
+          description: Optional. Trimmed before save. Empty string becomes null.
+        goodToKnow:
+          type: string
+          nullable: true
+          maxLength: 10000
+          description: Optional. Trimmed before save. Empty string becomes null.
+
+    UpdateExperienceRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      description: |
+        Partial update. Only these fields are allowed. At least one field is required.
+        Unknown fields cause `invalid_input`. Null clears optional text fields.
+      properties:
+        placeId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          nullable: true
+          maxLength: 10000
+        goodToKnow:
+          type: string
+          nullable: true
+          maxLength: 10000
+
+    AssignExperienceTagsRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - tagIds
+      properties:
+        tagIds:
+          type: array
+          minItems: 1
+          description: One or more existing tag UUIDs to assign.
+          items:
+            type: string
+            format: uuid
+
+    ExperienceResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - experience
+      properties:
+        experience:
+          $ref: "#/components/schemas/Experience"
+
+    ExperienceListResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - experiences
+      properties:
+        experiences:
+          type: array
+          items:
+            $ref: "#/components/schemas/Experience"
+
+    ExperienceTagsResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - tags
+      properties:
+        tags:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tag"
+
+    DeleteExperienceResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - deleted
+      properties:
+        deleted:
+          type: boolean
+          enum: [true]
+          description: Always `true` when deletion succeeds.
+
+    DeleteExperienceTagResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - deleted
+      properties:
+        deleted:
+          type: boolean
+          enum: [true]
+          description: Always `true` when the tag assignment is removed.
+
     ApiErrorCode:
       type: string
       enum:
@@ -565,9 +1353,10 @@ components:
           type: string
         details:
           description: |
-            Optional field-level validation details. When present for place
-            validation failures, this is an object mapping field names to
-            human-readable messages (for example `latitude`, `slug`).
+            Optional field-level validation details. When present for validation
+            failures, this is an object mapping field names to human-readable
+            messages (for example `latitude`, `slug`, `placeId`, `title`,
+            `tagIds`).
           type: object
           additionalProperties:
             type: string

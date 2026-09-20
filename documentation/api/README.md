@@ -11,6 +11,11 @@ This folder documents the project's HTTP API contract.
 
 `openapi.yaml` is the source of truth for request and response shapes, status codes, validation rules, and error formats that callers can rely on.
 
+Currently documented areas:
+
+- Places (`/api/places`)
+- Experiences and experience tag assignments (`/api/experiences`)
+
 ## How to use the specification
 
 - Read `openapi.yaml` when implementing clients, writing tests, or reviewing API changes.
