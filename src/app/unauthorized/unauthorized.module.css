@@ -1,0 +1,124 @@
+.page {
+  --unauth-bg: #f7f6f3;
+  --unauth-surface: #ffffff;
+  --unauth-text: #1a1a1a;
+  --unauth-muted: #5c5c5c;
+  --unauth-border: #e6e4df;
+
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  background: var(--unauth-bg);
+  color: var(--unauth-text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.panel {
+  width: 100%;
+  max-width: 440px;
+  background: var(--unauth-surface);
+  border: 1px solid var(--unauth-border);
+  padding: 40px 32px;
+}
+
+.brand {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--unauth-muted);
+  margin-bottom: 28px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--unauth-muted);
+  margin-bottom: 28px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.actionForm {
+  display: flex;
+  margin: 0;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--unauth-text);
+  color: #ffffff;
+  border: 1px solid var(--unauth-text);
+}
+
+.primary:hover {
+  background: #333333;
+}
+
+.secondary {
+  appearance: none;
+  border: 1px solid var(--unauth-border);
+  background: var(--unauth-surface);
+  color: var(--unauth-text);
+}
+
+.secondary:hover {
+  border-color: #cfcbc3;
+}
+
+.primary:focus-visible,
+.secondary:focus-visible {
+  outline: 2px solid var(--unauth-text);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 32px 16px;
+  }
+
+  .panel {
+    padding: 32px 20px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .actionForm,
+  .primary,
+  .secondary {
+    width: 100%;
+  }
+}

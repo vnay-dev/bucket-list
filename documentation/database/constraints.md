@@ -32,8 +32,12 @@ All relationships in [relationships.md](./relationships.md) are enforced with fo
 
 - `user`
 - `curator`
+- `superadmin`
 
 Default: `user`
+
+Hierarchy (higher includes lower privileges): `user` < `curator` < `superadmin`.
+See [Authentication](../authentication.md) for how roles are assigned and enforced.
 
 ---
 
